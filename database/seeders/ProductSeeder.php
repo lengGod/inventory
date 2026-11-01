@@ -4,142 +4,220 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use App\Models\Product;
-use App\Models\Batch;
-use App\Models\Stock;
-use Carbon\Carbon;
+use App\Models\Unit;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        // Produk sample dengan track_batch dan track_expiry
         $products = [
             [
                 'sku' => 'VITMK001',
                 'barcode' => '8991001234001',
                 'name' => 'Vitamin C 500mg Tablet',
-                'category_id' => 2, // Vitamin
-                'unit_id' => 1, // Pcs
+                'category' => 'Vitamin',
+                'unit' => 'Pcs',
                 'min_stock' => 100,
-                'purchase_price' => 5000,
+                'purchase_price' => 2500,
                 'track_batch' => true,
                 'track_expiry' => true,
                 'expiry_alert_days' => 30,
-                'description' => 'Suplemen vitamin C 500mg per tablet, kemasan botol plastik 100 tablets',
+                'description' => 'Suplemen vitamin C 500mg per tablet, kemasan botol 100 tablet.',
+            ],
+            [
+                'sku' => 'VITMK002',
+                'barcode' => '8991001234002',
+                'name' => 'Vitamin D3 1000 IU',
+                'category' => 'Vitamin',
+                'unit' => 'Pcs',
+                'min_stock' => 40,
+                'purchase_price' => 42000,
+                'track_batch' => true,
+                'track_expiry' => true,
+                'expiry_alert_days' => 30,
+                'description' => 'Suplemen vitamin D3 1000 IU kemasan botol 60 kapsul.',
             ],
             [
                 'sku' => 'OBAT001',
-                'barcode' => '8991001234002',
+                'barcode' => '8991001234003',
                 'name' => 'Paracetamol 500mg Tablet',
-                'category_id' => 1, // Obat-obatan
-                'unit_id' => 1, // Pcs
+                'category' => 'Obat-obatan',
+                'unit' => 'Pcs',
                 'min_stock' => 150,
-                'purchase_price' => 3000,
+                'purchase_price' => 1200,
                 'track_batch' => true,
                 'track_expiry' => true,
                 'expiry_alert_days' => 30,
-                'description' => 'Obat penurun panas dan penghilang nyeri, 1 strip = 10 tablet',
+                'description' => 'Obat penurun panas dan penghilang nyeri, 1 strip = 10 tablet.',
+            ],
+            [
+                'sku' => 'OBAT002',
+                'barcode' => '8991001234004',
+                'name' => 'Amoxicillin 500mg Kapsul',
+                'category' => 'Obat-obatan',
+                'unit' => 'Pcs',
+                'min_stock' => 120,
+                'purchase_price' => 2500,
+                'track_batch' => true,
+                'track_expiry' => true,
+                'expiry_alert_days' => 30,
+                'description' => 'Antibiotik amoxicillin 500mg, kemasan strip 10 kapsul.',
             ],
             [
                 'sku' => 'ALS001',
-                'barcode' => '8991001234003',
+                'barcode' => '8991001234005',
                 'name' => 'Hand Sanitizer 500ml',
-                'category_id' => 3, // Alat Kesehatan
-                'unit_id' => 2, // Box
-                'min_stock' => 50,
-                'purchase_price' => 25000,
+                'category' => 'Alat Kesehatan',
+                'unit' => 'Pcs',
+                'min_stock' => 30,
+                'purchase_price' => 22000,
                 'track_batch' => true,
                 'track_expiry' => true,
                 'expiry_alert_days' => 60,
-                'description' => 'Desinfektan tangan 500ml, gel alkohol 70%',
+                'description' => 'Desinfektan tangan 500ml, gel alkohol 70%.',
             ],
             [
-                'sku' => 'KAN001',
-                'barcode' => '8991001234004',
-                'name' => 'Kantong Plastik Putih (Kecil)',
-                'category_id' => 8, // Produk Rumah Tangga
-                'unit_id' => 3, // Dus
-                'min_stock' => 500,
-                'purchase_price' => 50000,
-                'track_batch' => false,
-                'track_expiry' => false,
-                'description' => '1 dus berisi 1000 lembar kantong plastik ukuran 20x30cm',
+                'sku' => 'ALS002',
+                'barcode' => '8991001234006',
+                'name' => 'Alkohol 70% 1 Liter',
+                'category' => 'Alat Kesehatan',
+                'unit' => 'Liter',
+                'min_stock' => 25,
+                'purchase_price' => 30000,
+                'track_batch' => true,
+                'track_expiry' => true,
+                'expiry_alert_days' => 60,
+                'description' => 'Cairan antiseptik alkohol 70% kemasan 1 liter.',
             ],
             [
                 'sku' => 'MKNN001',
-                'barcode' => '8991001234005',
+                'barcode' => '8991001234007',
                 'name' => 'Masker Medis 3ply (50 pcs)',
-                'category_id' => 3, // Alat Kesehatan
-                'unit_id' => 1, // Pcs
-                'min_stock' => 200,
-                'purchase_price' => 45000,
+                'category' => 'Alat Kesehatan',
+                'unit' => 'Box',
+                'min_stock' => 100,
+                'purchase_price' => 38000,
                 'track_batch' => true,
                 'track_expiry' => true,
                 'expiry_alert_days' => 45,
-                'description' => 'Masker medis 3 lapis, earloop, kemasan 50 pcs per box',
+                'description' => 'Masker medis 3 lapis, earloop, kemasan 50 pcs per box.',
+            ],
+            [
+                'sku' => 'MNM001',
+                'barcode' => '8991001234008',
+                'name' => 'Air Mineral 600ml',
+                'category' => 'Makanan & Minuman',
+                'unit' => 'Dus',
+                'min_stock' => 60,
+                'purchase_price' => 55000,
+                'track_batch' => true,
+                'track_expiry' => true,
+                'expiry_alert_days' => 30,
+                'description' => 'Air mineral kemasan 600ml, 1 dus isi 24 botol.',
+            ],
+            [
+                'sku' => 'PRT001',
+                'barcode' => '8991001234009',
+                'name' => 'Tisu Gulung',
+                'category' => 'Produk Rumah Tangga',
+                'unit' => 'Dus',
+                'min_stock' => 40,
+                'purchase_price' => 27000,
+                'track_batch' => false,
+                'track_expiry' => false,
+                'expiry_alert_days' => null,
+                'description' => 'Tisu gulung isi 10 roll per dus.',
+            ],
+            [
+                'sku' => 'PRT002',
+                'barcode' => '8991001234010',
+                'name' => 'Sabun Cair 500ml',
+                'category' => 'Produk Rumah Tangga',
+                'unit' => 'Pcs',
+                'min_stock' => 30,
+                'purchase_price' => 17000,
+                'track_batch' => true,
+                'track_expiry' => true,
+                'expiry_alert_days' => 60,
+                'description' => 'Sabun cair antibakteri kemasan 500ml.',
+            ],
+            [
+                'sku' => 'KAN001',
+                'barcode' => '8991001234011',
+                'name' => 'Kantong Plastik Putih (Kecil)',
+                'category' => 'Produk Rumah Tangga',
+                'unit' => 'Dus',
+                'min_stock' => 200,
+                'purchase_price' => 45000,
+                'track_batch' => false,
+                'track_expiry' => false,
+                'expiry_alert_days' => null,
+                'description' => '1 dus berisi 1000 lembar kantong plastik ukuran 20x30cm.',
+            ],
+            [
+                'sku' => 'ATK001',
+                'barcode' => '8991001234012',
+                'name' => 'Pena Gel Hitam',
+                'category' => 'Perlengkapan Kantor',
+                'unit' => 'Box',
+                'min_stock' => 40,
+                'purchase_price' => 18000,
+                'track_batch' => false,
+                'track_expiry' => false,
+                'expiry_alert_days' => null,
+                'description' => 'Pena gel tinta hitam, 1 box isi 12 pcs.',
+            ],
+            [
+                'sku' => 'ELK001',
+                'barcode' => '8991001234013',
+                'name' => 'Kabel HDMI 2 Meter',
+                'category' => 'Elektronik',
+                'unit' => 'Pcs',
+                'min_stock' => 12,
+                'purchase_price' => 70000,
+                'track_batch' => false,
+                'track_expiry' => false,
+                'expiry_alert_days' => null,
+                'description' => 'Kabel HDMI versi 2.0 panjang 2 meter.',
+            ],
+            [
+                'sku' => 'PKN001',
+                'barcode' => '8991001234014',
+                'name' => 'Kemeja Seragam',
+                'category' => 'Pakaian',
+                'unit' => 'Pcs',
+                'min_stock' => 25,
+                'purchase_price' => 110000,
+                'track_batch' => false,
+                'track_expiry' => false,
+                'expiry_alert_days' => null,
+                'description' => 'Kemeja seragam kerja lengan panjang.',
             ],
         ];
 
-        foreach ($products as $productData) {
-            $product = Product::create($productData);
+        $categoryIds = Category::pluck('id', 'name');
+        $unitIds = Unit::pluck('id', 'name');
 
-            // Buat batch jika track_batch = true
-            if ($product->track_batch) {
-                $batches = [
-                    [
-                        'batch_number' => 'B-261001-01',
-                        'supplier_id' => 1,
-                        'manufactured_date' => Carbon::now()->subDays(60)->toDateString(),
-                        'expiry_date' => Carbon::now()->addDays(90)->toDateString(), // 90 hari ke depan
-                        'status' => 'active',
-                    ],
-                    [
-                        'batch_number' => 'B-261001-02',
-                        'supplier_id' => 2,
-                        'manufactured_date' => Carbon::now()->subDays(30)->toDateString(),
-                        'expiry_date' => Carbon::now()->addDays(15)->toDateString(), // 15 hari (near expiry)
-                        'status' => 'near_expiry',
-                    ],
-                    [
-                        'batch_number' => 'B-261001-03',
-                        'supplier_id' => 3,
-                        'manufactured_date' => Carbon::now()->subDays(120)->toDateString(),
-                        'expiry_date' => Carbon::now()->subDays(5)->toDateString(), // Sudah expired
-                        'status' => 'expired',
-                    ],
-                ];
-
-                foreach ($batches as $batchData) {
-                    $batch = Batch::create(array_merge(['product_id' => $product->id], $batchData));
-
-                    // Buat stock per batch per location
-                    if ($batchData['status'] !== 'expired') {
-                        Stock::create([
-                            'product_id' => $product->id,
-                            'location_id' => 1, // RAK-A1
-                            'batch_id' => $batch->id,
-                            'quantity' => rand(100, 500),
-                        ]);
-
-                        Stock::create([
-                            'product_id' => $product->id,
-                            'location_id' => 2, // RAK-A2
-                            'batch_id' => $batch->id,
-                            'quantity' => rand(50, 200),
-                        ]);
-                    }
-                }
-            } else {
-                // Untuk produk tanpa batch tracking, buat stock langsung
-                Stock::create([
-                    'product_id' => $product->id,
-                    'location_id' => 3, // RAK-B1
-                    'batch_id' => null,
-                    'quantity' => rand(500, 2000),
-                ]);
-            }
+        foreach ($products as $product) {
+            Product::updateOrCreate(
+                ['sku' => $product['sku']],
+                [
+                    'barcode' => $product['barcode'],
+                    'name' => $product['name'],
+                    'category_id' => $categoryIds[$product['category']],
+                    'unit_id' => $unitIds[$product['unit']],
+                    'min_stock' => $product['min_stock'],
+                    'purchase_price' => $product['purchase_price'],
+                    'track_batch' => $product['track_batch'],
+                    'track_expiry' => $product['track_expiry'],
+                    'expiry_alert_days' => $product['expiry_alert_days'],
+                    'is_active' => true,
+                    'description' => $product['description'],
+                ]
+            );
         }
     }
 }

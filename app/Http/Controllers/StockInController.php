@@ -25,12 +25,20 @@ class StockInController extends Controller
         $this->stockService = $stockService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->query('search');
+
         return Inertia::render('StockIns/Index', [
             'stockIns' => StockIn::with(['supplier', 'creator'])
+                ->when($search, fn($q) => $q->where(function ($q) use ($search) {
+                    $q->where('doc_number', 'like', "%{$search}%")
+                      ->orWhereHas('supplier', fn($q) => $q->where('name', 'like', "%{$search}%"));
+                }))
                 ->orderBy('doc_number', 'desc')
-                ->paginate(50),
+                ->paginate(10)
+                ->withQueryString(),
+            'filters' => ['search' => $search],
         ]);
     }
 

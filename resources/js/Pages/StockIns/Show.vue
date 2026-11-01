@@ -4,9 +4,13 @@ import Card from '@/Components/Card.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import StatusChip from '@/Components/StatusChip.vue';
+import { useAuthorization } from '@/Utils/authorization';
 import { Head, useForm, Link } from '@inertiajs/vue3';
+import { formatDate, formatDateTime, formatNumber, formatRupiah } from '@/Utils/format';
 
-defineProps({
+const { can } = useAuthorization();
+
+const props = defineProps({
     stockIn: {
         type: Object,
         required: true,
@@ -40,7 +44,7 @@ const post = () => {
                         </div>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                        <PrimaryButton v-if="stockIn.status === 'draft'" @click="post" :loading="form.processing" class="w-full sm:w-auto">Posting Stok</PrimaryButton>
+                        <PrimaryButton v-if="can('manage_transactions') && stockIn.status === 'draft'" @click="post" :loading="form.processing" class="w-full sm:w-auto">Posting Stok</PrimaryButton>
                         <SecondaryButton as="link" :href="route('stock-ins.index')" class="w-full sm:w-auto">Kembali</SecondaryButton>
                     </div>
                 </div>
@@ -50,7 +54,7 @@ const post = () => {
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                         <div>
                             <p class="text-muted text-xs font-semibold mb-1">Tanggal</p>
-                            <p class="text-sm">{{ stockIn.date }}</p>
+                            <p class="text-sm">{{ formatDate(stockIn.date) }}</p>
                         </div>
                         <div>
                             <p class="text-muted text-xs font-semibold mb-1">Supplier</p>
@@ -62,7 +66,7 @@ const post = () => {
                         </div>
                         <div>
                             <p class="text-muted text-xs font-semibold mb-1">Diposting</p>
-                            <p class="text-sm">{{ stockIn.posted_at || '-' }}</p>
+                            <p class="text-sm">{{ formatDateTime(stockIn.posted_at) }}</p>
                         </div>
                     </div>
                     <div v-if="stockIn.notes" class="mt-4 pt-4 border-t border-line">
@@ -91,8 +95,8 @@ const post = () => {
                                 <tr v-for="item in stockIn.items" :key="item.id" class="border-b border-surface-2">
                                     <td class="py-3 px-4">{{ item.product?.name }}</td>
                                     <td class="py-3 px-4">{{ item.location?.code }}</td>
-                                    <td class="py-3 px-4 text-center">{{ item.qty }}</td>
-                                    <td class="py-3 px-4 text-right">{{ item.unit_price || '-' }}</td>
+                                    <td class="py-3 px-4 text-center">{{ formatNumber(item.qty) }}</td>
+                                    <td class="py-3 px-4 text-right">{{ item.unit_price ? formatRupiah(item.unit_price) : '-' }}</td>
                                 </tr>
                             </tbody>
                         </table>

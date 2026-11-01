@@ -23,6 +23,7 @@
         "@laravel/multiplex": "^0.4.1"
     },
     "dependencies": {
+        "@lucide/vue": "^1.66.0",
         "chart.js": "^4.6.1",
         "html5-qrcode": "^2.3.8"
     }

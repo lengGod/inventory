@@ -10,10 +10,22 @@ use Inertia\Inertia;
 
 class LocationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->query('search');
+        $locations = Location::query()
+            ->when($search, fn($q) => $q->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                  ->orWhere('name', 'like', "%{$search}%")
+                  ->orWhere('barcode', 'like', "%{$search}%");
+            }))
+            ->orderBy('code')
+            ->paginate(10)
+            ->withQueryString();
+
         return Inertia::render('Locations/Index', [
-            'locations' => Location::orderBy('code')->get(),
+            'locations' => $locations,
+            'filters' => ['search' => $search],
         ]);
     }
 

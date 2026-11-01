@@ -3,7 +3,7 @@ defineProps({
     status: {
         type: String,
         required: true,
-        validator: (v) => ['ok', 'warn', 'bad', 'info', 'adj', 'active', 'near_expiry', 'expired'].includes(v),
+        validator: (v) => ['ok', 'warn', 'bad', 'info', 'adj', 'active', 'near_expiry', 'expired', 'depleted'].includes(v),
     },
 });
 
@@ -16,6 +16,7 @@ const colorMap = {
     active: { bg: 'bg-lime/10', fg: 'text-lime' },
     near_expiry: { bg: 'bg-yellow-400/10', fg: 'text-yellow-400' },
     expired: { bg: 'bg-red-400/10', fg: 'text-red-400' },
+    depleted: { bg: 'bg-surface-2', fg: 'text-muted' },
 };
 </script>
 

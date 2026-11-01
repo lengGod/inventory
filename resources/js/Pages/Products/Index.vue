@@ -4,19 +4,32 @@ import Card from '@/Components/Card.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import DeleteConfirm from '@/Components/DeleteConfirm.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import Pagination from '@/Components/Pagination.vue';
+import { useAuthorization } from '@/Utils/authorization';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { useTableSearch } from '@/Composables/useTableSearch';
+import { ref, watch } from 'vue';
 
-defineProps({
-    products: {
-        type: Object,
-        default: {},
-    },
-    categories: {
-        type: Array,
-        default: [],
-    },
+const { can } = useAuthorization();
+
+const props = defineProps({
+    products: Object,
+    categories: Array,
+    filters: Object,
 });
+
+const categoryId = ref(props.filters.category_id ?? '');
+
+const filter = () => {
+    router.get(route('products.index'), {
+        search: search.value,
+        category_id: categoryId.value,
+    }, { preserveState: true, replace: true });
+};
+
+const search = useTableSearch(filter, 300, props.filters?.search ?? '');
+
+watch(categoryId, filter);
 
 const deleteConfirm = ref(false);
 const deletingProduct = ref(null);
@@ -52,17 +65,18 @@ const executeDelete = () => {
                         <p class="text-muted text-sm">Master Data</p>
                         <h1 class="text-display font-bold text-3xl text-ink">Barang</h1>
                     </div>
-                    <PrimaryButton as="link" :href="route('products.create')" class="w-full sm:w-auto">+ Barang</PrimaryButton>
+                    <PrimaryButton v-if="can('manage_master_data')" as="link" :href="route('products.create')" class="w-full sm:w-auto">+ Barang</PrimaryButton>
                 </div>
 
                 <!-- Toolbar -->
                 <Card class="mb-6 flex flex-col sm:flex-row gap-3">
                     <input
+                        v-model="search"
                         type="text"
                         placeholder="Cari nama/SKU..."
                         class="flex-1 h-12 px-4 border-2 border-line text-sm focus:border-ink focus:outline-none"
                     />
-                    <select class="h-12 px-4 border-2 border-line text-sm focus:border-ink focus:outline-none">
+                    <select v-model="categoryId" class="h-12 px-4 border-2 border-line text-sm focus:border-ink focus:outline-none">
                         <option value="">Semua Kategori</option>
                         <option v-for="cat in categories" :key="cat.id" :value="cat.id">
                             {{ cat.name }}
@@ -98,10 +112,11 @@ const executeDelete = () => {
                                         <Link :href="route('products.show', product.id)">
                                             <SecondaryButton class="text-xs">Lihat</SecondaryButton>
                                         </Link>
-                                        <Link :href="route('products.edit', product.id)">
+                                        <Link v-if="can('manage_master_data')" :href="route('products.edit', product.id)">
                                             <SecondaryButton class="text-xs">Ubah</SecondaryButton>
                                         </Link>
                                         <button 
+                                            v-if="can('manage_master_data')"
                                             @click="confirmDelete(product)"
                                             class="inline-flex items-center justify-center h-10 px-4 text-xs font-semibold text-red-400 border-2 border-red-400 bg-transparent hover:bg-red-400/10 transition"
                                         >
@@ -112,6 +127,7 @@ const executeDelete = () => {
                             </tbody>
                         </table>
                     </div>
+                    <Pagination :paginator="products" />
                 </Card>
             </div>
         </div>

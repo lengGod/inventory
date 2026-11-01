@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -22,6 +21,12 @@ class DatabaseSeeder extends Seeder
             SupplierSeeder::class,
             LocationSeeder::class,
             ProductSeeder::class,
+            BatchSeeder::class,
+            StockInSeeder::class,
+            StockOutSeeder::class,
+            StockAdjustmentSeeder::class,
+            LabelPrintLogSeeder::class,
+            DashboardChartSeeder::class,
         ]);
     }
 }

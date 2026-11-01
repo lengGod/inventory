@@ -3,19 +3,25 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Card from '@/Components/Card.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { useAuthorization } from '@/Utils/authorization';
 import { Head, useForm } from '@inertiajs/vue3';
+import { formatDateTime, formatNumber } from '@/Utils/format';
 
-defineProps({
+const { can } = useAuthorization();
+
+const props = defineProps({
     adjustment: Object,
 });
+
+const totalQty = () => props.adjustment.items.reduce((sum, item) => sum + parseFloat(item.quantity), 0);
 
 const form = useForm({});
 
 const post = () => {
-    form.post(route('stock-adjustments.post', adjustment.id));
+    form.post(route('stock-adjustments.post', props.adjustment.id));
 };
 
-const canPost = () => adjustment.status === 'draft';
+const canPost = () => props.adjustment.status === 'draft';
 
 const getTypeLabel = (type) => {
     return type === 'increase' ? 'Penambahan Stok' : 'Pengurangan Stok';
@@ -36,10 +42,10 @@ const getTypeColor = (type) => {
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                     <div>
                         <h1 class="text-display font-bold text-2xl sm:text-3xl text-ink break-all">{{ adjustment.doc_number }}</h1>
-                        <p class="text-muted text-sm mt-1">Dibuat {{ new Date(adjustment.created_at).toLocaleDateString('id-ID') }}</p>
+                        <p class="text-muted text-sm mt-1">Dibuat {{ formatDateTime(adjustment.created_at) }}</p>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                        <PrimaryButton v-if="canPost()" @click="post" :loading="form.processing" class="w-full sm:w-auto">Post Penyesuaian</PrimaryButton>
+                        <PrimaryButton v-if="can('manage_transactions') && canPost()" @click="post" :loading="form.processing" class="w-full sm:w-auto">Post Penyesuaian</PrimaryButton>
                         <SecondaryButton as="link" :href="route('stock-adjustments.index')" class="w-full sm:w-auto">Kembali</SecondaryButton>
                     </div>
                 </div>
@@ -94,7 +100,7 @@ const getTypeColor = (type) => {
                                     <tbody>
                                         <tr v-for="item in adjustment.items" :key="item.id" class="border-b border-line">
                                             <td class="py-3 px-4 font-semibold text-ink">{{ item.product_name }}</td>
-                                            <td class="py-3 px-4 text-center">{{ item.quantity }}</td>
+                                            <td class="py-3 px-4 text-center">{{ formatNumber(item.quantity) }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -104,7 +110,7 @@ const getTypeColor = (type) => {
 
                     <!-- Summary -->
                     <div>
-                        <Card class="sticky top-24">
+                        <Card class="sticky top-[7rem]">
                             <h2 class="text-xl font-bold text-ink font-display mb-4">Ringkasan</h2>
                             
                             <div class="space-y-3 pb-6 border-b-2 border-line mb-6">
@@ -117,13 +123,13 @@ const getTypeColor = (type) => {
                                 <div class="flex justify-between">
                                     <span class="text-muted">Total Qty</span>
                                     <span :class="['text-lg font-bold', adjustment.type === 'increase' ? 'text-lime' : 'text-red-400']">
-                                        {{ adjustment.items.reduce((sum, item) => sum + item.quantity, 0) }}
+                                        {{ formatNumber(totalQty()) }}
                                     </span>
                                 </div>
                             </div>
 
                             <div v-if="adjustment.status === 'posted'" class="bg-lime/10 px-4 py-3 rounded border-l-2 border-lime">
-                                <p class="text-sm font-semibold text-lime">Posted {{ new Date(adjustment.posted_at).toLocaleDateString('id-ID') }}</p>
+                                <p class="text-sm font-semibold text-lime">Posted {{ formatDateTime(adjustment.posted_at) }}</p>
                             </div>
                         </Card>
                     </div>

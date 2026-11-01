@@ -3,19 +3,25 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Card from '@/Components/Card.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { useAuthorization } from '@/Utils/authorization';
 import { Head, useForm } from '@inertiajs/vue3';
+import { formatDateTime, formatNumber } from '@/Utils/format';
 
-defineProps({
+const { can } = useAuthorization();
+
+const props = defineProps({
     stockOut: Object,
 });
+
+const totalQty = () => props.stockOut.items.reduce((sum, item) => sum + parseFloat(item.quantity), 0);
 
 const form = useForm({});
 
 const post = () => {
-    form.post(route('stock-outs.post', stockOut.id));
+    form.post(route('stock-outs.post', props.stockOut.id));
 };
 
-const canPost = () => stockOut.status === 'draft';
+const canPost = () => props.stockOut.status === 'draft';
 </script>
 
 <template>
@@ -28,10 +34,10 @@ const canPost = () => stockOut.status === 'draft';
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                     <div>
                         <h1 class="text-display font-bold text-2xl sm:text-3xl text-ink break-all">{{ stockOut.doc_number }}</h1>
-                        <p class="text-muted text-sm mt-1">Dibuat {{ new Date(stockOut.created_at).toLocaleDateString('id-ID') }}</p>
+                        <p class="text-muted text-sm mt-1">Dibuat {{ formatDateTime(stockOut.created_at) }}</p>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                        <PrimaryButton v-if="canPost()" @click="post" :loading="form.processing" class="w-full sm:w-auto">Post Barang Keluar</PrimaryButton>
+                        <PrimaryButton v-if="can('manage_transactions') && canPost()" @click="post" :loading="form.processing" class="w-full sm:w-auto">Post Barang Keluar</PrimaryButton>
                         <SecondaryButton as="link" :href="route('stock-outs.index')" class="w-full sm:w-auto">Kembali</SecondaryButton>
                     </div>
                 </div>
@@ -71,7 +77,7 @@ const canPost = () => stockOut.status === 'draft';
                                         <tr v-for="item in stockOut.items" :key="item.id" class="border-b border-line">
                                             <td class="py-3 px-4 font-semibold text-ink">{{ item.product_name }}</td>
                                             <td class="py-3 px-4 text-muted">{{ item.batch_number }}</td>
-                                            <td class="py-3 px-4 text-center">{{ item.quantity }}</td>
+                                            <td class="py-3 px-4 text-center">{{ formatNumber(item.quantity) }}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -87,7 +93,7 @@ const canPost = () => stockOut.status === 'draft';
 
                     <!-- Summary -->
                     <div>
-                        <Card class="sticky top-24">
+                        <Card class="sticky top-[7rem]">
                             <h2 class="text-xl font-bold text-ink font-display mb-4">Ringkasan</h2>
                             
                             <div class="space-y-3 pb-6 border-b-2 border-line mb-6">
@@ -97,12 +103,12 @@ const canPost = () => stockOut.status === 'draft';
                                 </div>
                                 <div class="flex justify-between">
                                     <span class="text-muted">Total Qty</span>
-                                    <span class="text-lg font-bold text-lime">{{ stockOut.items.reduce((sum, item) => sum + item.quantity, 0) }}</span>
+                                    <span class="text-lg font-bold text-lime">{{ formatNumber(totalQty()) }}</span>
                                 </div>
                             </div>
 
                             <div v-if="stockOut.status === 'posted'" class="bg-lime/10 px-4 py-3 rounded border-l-2 border-lime">
-                                <p class="text-sm font-semibold text-lime">Posted {{ new Date(stockOut.posted_at).toLocaleDateString('id-ID') }}</p>
+                                <p class="text-sm font-semibold text-lime">Posted {{ formatDateTime(stockOut.posted_at) }}</p>
                             </div>
                         </Card>
                     </div>

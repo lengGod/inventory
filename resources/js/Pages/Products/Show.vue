@@ -4,8 +4,12 @@ import Card from '@/Components/Card.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import StatusChip from '@/Components/StatusChip.vue';
+import { useAuthorization } from '@/Utils/authorization';
 import { Head, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { formatDate, formatNumber, formatRupiah } from '@/Utils/format';
+
+const { can } = useAuthorization();
 
 defineProps({
     product: {
@@ -17,11 +21,7 @@ defineProps({
 const activeTab = ref('stocks');
 
 const formatCurrency = (val) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-    }).format(val || 0);
+    return formatRupiah(val);
 };
 </script>
 
@@ -39,7 +39,7 @@ const formatCurrency = (val) => {
                         <p class="text-muted text-sm mt-2">{{ product.sku }}</p>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                        <PrimaryButton as="link" :href="route('products.edit', product.id)" class="w-full sm:w-auto">Ubah</PrimaryButton>
+                        <PrimaryButton v-if="can('manage_master_data')" as="link" :href="route('products.edit', product.id)" class="w-full sm:w-auto">Ubah</PrimaryButton>
                         <SecondaryButton as="link" :href="route('products.index')" class="w-full sm:w-auto">Kembali</SecondaryButton>
                     </div>
                 </div>
@@ -70,7 +70,7 @@ const formatCurrency = (val) => {
                         </div>
                         <div>
                             <p class="text-muted text-xs font-semibold mb-1">Stok Minimum</p>
-                            <p class="text-sm">{{ product.min_stock || 0 }} {{ product.unit?.short_name }}</p>
+                            <p class="text-sm">{{ formatNumber(product.min_stock) }} {{ product.unit?.short_name }}</p>
                         </div>
                         <div>
                             <p class="text-muted text-xs font-semibold mb-1">Harga Beli</p>
@@ -148,7 +148,7 @@ const formatCurrency = (val) => {
                                 <tbody>
                                     <tr v-for="batch in product.batches" :key="batch.id" class="border-b border-surface-2">
                                         <td class="py-4 px-4">{{ batch.batch_number }}</td>
-                                        <td class="py-4 px-4">{{ batch.expiry_date || '-' }}</td>
+                                        <td class="py-4 px-4">{{ formatDate(batch.expiry_date, '-') }}</td>
                                         <td class="py-4 px-4">
                                             <StatusChip :status="batch.status || 'info'">{{ batch.status }}</StatusChip>
                                         </td>

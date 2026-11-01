@@ -12,13 +12,24 @@ use Inertia\Inertia;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->query('search');
+        $categoryId = $request->query('category_id');
+
         return Inertia::render('Products/Index', [
             'products' => Product::with(['category', 'unit'])
+                ->when($search, fn($q) => $q->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhere('sku', 'like', "%{$search}%")
+                      ->orWhere('barcode', 'like', "%{$search}%");
+                }))
+                ->when($categoryId, fn($q) => $q->where('category_id', $categoryId))
                 ->orderBy('name')
-                ->paginate(50),
+                ->paginate(10)
+                ->withQueryString(),
             'categories' => Category::orderBy('name')->get(),
+            'filters' => ['search' => $search, 'category_id' => $categoryId],
         ]);
     }
 

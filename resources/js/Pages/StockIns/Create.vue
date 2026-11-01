@@ -5,6 +5,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+import { formatNumber, formatRupiah } from '@/Utils/format';
 
 const props = defineProps({
     docNumber: String,
@@ -160,8 +161,8 @@ const getLocationName = (locationId) => {
                                 <tr v-for="(item, idx) in form.items" :key="idx" class="border-b border-surface-2 hover:bg-surface-2">
                                     <td class="py-3 px-4">{{ getProductName(item.product_id) }}</td>
                                     <td class="py-3 px-4">{{ getLocationName(item.location_id) }}</td>
-                                    <td class="py-3 px-4 text-center font-semibold">{{ item.qty }}</td>
-                                    <td class="py-3 px-4 text-center">{{ item.unit_price || '-' }}</td>
+                                    <td class="py-3 px-4 text-center font-semibold">{{ formatNumber(item.qty) }}</td>
+                                    <td class="py-3 px-4 text-center">{{ item.unit_price ? formatRupiah(item.unit_price) : '-' }}</td>
                                     <td class="py-3 px-4 text-center">
                                         <button @click="removeItem(idx)" class="text-bad-fg hover:underline text-xs font-semibold">Hapus</button>
                                     </td>

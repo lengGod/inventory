@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\Role;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -27,6 +28,45 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => Role::class,
+            'is_active' => 'boolean',
         ];
+    }
+
+    public function hasRole(Role|string ...$roles): bool
+    {
+        if (! $this->role instanceof Role) {
+            return false;
+        }
+
+        foreach ($roles as $role) {
+            $value = $role instanceof Role ? $role->value : $role;
+
+            if ($this->role->value === $value) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function canManageMasterData(): bool
+    {
+        return $this->hasRole(Role::Admin);
+    }
+
+    public function canOperateTransactions(): bool
+    {
+        return $this->hasRole(Role::Admin, Role::Staff);
+    }
+
+    public function canPrintLabels(): bool
+    {
+        return $this->hasRole(Role::Admin, Role::Staff);
+    }
+
+    public function canManageUsers(): bool
+    {
+        return $this->hasRole(Role::Admin);
     }
 }

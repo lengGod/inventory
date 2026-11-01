@@ -5,15 +5,23 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import StatusChip from '@/Components/StatusChip.vue';
 import DeleteConfirm from '@/Components/DeleteConfirm.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import Pagination from '@/Components/Pagination.vue';
+import { useAuthorization } from '@/Utils/authorization';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { useTableSearch } from '@/Composables/useTableSearch';
 import { ref } from 'vue';
+import { formatDate } from '@/Utils/format';
 
-defineProps({
-    stockIns: {
-        type: Object,
-        default: {},
-    },
+const { can } = useAuthorization();
+
+const props = defineProps({
+    stockIns: Object,
+    filters: Object,
 });
+
+const search = useTableSearch((value) => {
+    router.get(route('stock-ins.index'), { search: value }, { preserveState: true, replace: true });
+}, 300, props.filters?.search ?? '');
 
 const deleteConfirm = ref(false);
 const deletingDoc = ref(null);
@@ -49,8 +57,18 @@ const executeDelete = () => {
                         <p class="text-muted text-sm">Transaksi</p>
                         <h1 class="text-display font-bold text-3xl text-ink">Barang Masuk</h1>
                     </div>
-                    <PrimaryButton as="link" :href="route('stock-ins.create')" class="w-full sm:w-auto">+ Barang Masuk</PrimaryButton>
+                    <PrimaryButton v-if="can('manage_transactions')" as="link" :href="route('stock-ins.create')" class="w-full sm:w-auto">+ Barang Masuk</PrimaryButton>
                 </div>
+
+                <!-- Toolbar -->
+                <Card class="mb-6 flex flex-col sm:flex-row gap-3">
+                    <input
+                        v-model="search"
+                        type="text"
+                        placeholder="Cari nomor dokumen atau supplier..."
+                        class="flex-1 h-12 px-4 border-2 border-line text-sm focus:border-ink focus:outline-none"
+                    />
+                </Card>
 
                 <!-- Table -->
                 <Card>
@@ -72,7 +90,7 @@ const executeDelete = () => {
                             <tbody>
                                 <tr v-for="doc in stockIns.data" :key="doc.id" class="border-b border-surface-2 hover:bg-surface-2">
                                     <td class="py-3 px-4 font-semibold">{{ doc.doc_number }}</td>
-                                    <td class="py-3 px-4">{{ doc.date }}</td>
+                                    <td class="py-3 px-4">{{ formatDate(doc.date) }}</td>
                                     <td class="py-3 px-4">{{ doc.supplier?.name || '-' }}</td>
                                     <td class="py-3 px-4">
                                         <StatusChip :status="doc.status === 'posted' ? 'ok' : 'warn'">
@@ -85,6 +103,7 @@ const executeDelete = () => {
                                             <SecondaryButton class="text-xs">Lihat</SecondaryButton>
                                         </Link>
                                         <button 
+                                            v-if="can('manage_transactions')"
                                             @click="confirmDelete(doc)"
                                             class="inline-flex items-center justify-center h-10 px-4 text-xs font-semibold text-red-400 border-2 border-red-400 bg-transparent hover:bg-red-400/10 transition"
                                         >
@@ -95,6 +114,7 @@ const executeDelete = () => {
                             </tbody>
                         </table>
                     </div>
+                    <Pagination :paginator="stockIns" />
                 </Card>
             </div>
         </div>

@@ -10,10 +10,21 @@ use Inertia\Inertia;
 
 class UnitController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->query('search');
+        $units = Unit::query()
+            ->when($search, fn($q) => $q->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('short_name', 'like', "%{$search}%");
+            }))
+            ->orderBy('name')
+            ->paginate(10)
+            ->withQueryString();
+
         return Inertia::render('Units/Index', [
-            'units' => Unit::orderBy('name')->get(),
+            'units' => $units,
+            'filters' => ['search' => $search],
         ]);
     }
 

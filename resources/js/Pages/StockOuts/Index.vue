@@ -4,12 +4,23 @@ import Card from '@/Components/Card.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import DeleteConfirm from '@/Components/DeleteConfirm.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import Pagination from '@/Components/Pagination.vue';
+import { useAuthorization } from '@/Utils/authorization';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { useTableSearch } from '@/Composables/useTableSearch';
 import { ref } from 'vue';
+import { formatDateTime } from '@/Utils/format';
 
-defineProps({
+const { can } = useAuthorization();
+
+const props = defineProps({
     stockOuts: Object,
+    filters: Object,
 });
+
+const search = useTableSearch((value) => {
+    router.get(route('stock-outs.index'), { search: value }, { preserveState: true, replace: true });
+}, 300, props.filters?.search ?? '');
 
 const getStatusColor = (status) => {
     const colors = {
@@ -63,8 +74,18 @@ const executeDelete = () => {
                         <h1 class="text-display font-bold text-3xl text-ink">Barang Keluar</h1>
                         <p class="text-muted text-sm mt-1">Manajemen stok keluar dengan alokasi FEFO</p>
                     </div>
-                    <PrimaryButton as="link" :href="route('stock-outs.create')" class="w-full sm:w-auto">+ Barang Keluar</PrimaryButton>
+                    <PrimaryButton v-if="can('manage_transactions')" as="link" :href="route('stock-outs.create')" class="w-full sm:w-auto">+ Barang Keluar</PrimaryButton>
                 </div>
+
+                <!-- Toolbar -->
+                <Card class="mb-6 flex flex-col sm:flex-row gap-3">
+                    <input
+                        v-model="search"
+                        type="text"
+                        placeholder="Cari nomor dokumen..."
+                        class="flex-1 h-12 px-4 border-2 border-line text-sm focus:border-ink focus:outline-none"
+                    />
+                </Card>
 
                 <!-- Table -->
                 <Card class="overflow-x-auto">
@@ -87,12 +108,13 @@ const executeDelete = () => {
                                         {{ getStatusLabel(stockOut.status) }}
                                     </span>
                                 </td>
-                                <td class="py-3 px-6 text-sm text-muted">{{ new Date(stockOut.created_at).toLocaleDateString('id-ID') }}</td>
+                                <td class="py-3 px-6 text-sm text-muted">{{ formatDateTime(stockOut.created_at) }}</td>
                                 <td class="py-3 px-6 text-right space-x-2">
                                     <Link :href="route('stock-outs.show', stockOut.id)" class="text-violet-text text-sm font-semibold hover:underline">
                                         Lihat Detail
                                     </Link>
                                     <button 
+                                        v-if="can('manage_transactions')"
                                         @click="confirmDelete(stockOut)"
                                         class="inline-flex items-center justify-center h-10 px-4 text-xs font-semibold text-red-400 border-2 border-red-400 bg-transparent hover:bg-red-400/10 transition"
                                     >
@@ -107,6 +129,7 @@ const executeDelete = () => {
                             </tr>
                         </tbody>
                     </table>
+                    <Pagination :paginator="stockOuts" />
                 </Card>
             </div>
         </div>

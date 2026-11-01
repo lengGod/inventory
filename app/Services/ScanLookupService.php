@@ -10,7 +10,7 @@ use App\Models\Product;
 
 /**
  * ScanLookupService
- * 
+ *
  * Resolusi kode scan: barcode → SKU → batch → lokasi
  * Urutan prioritas sesuai PRD section 5.23
  */
@@ -43,8 +43,10 @@ class ScanLookupService
             return $this->batchResult($batch);
         }
 
-        // 4. Cek lokasi/rak barcode
-        $location = Location::where('barcode', $code)->first();
+        // 4. Cek lokasi/rak (barcode lalu kode)
+        $location = Location::where('barcode', $code)
+            ->orWhere('code', $code)
+            ->first();
 
         if ($location) {
             return $this->locationResult($location);
@@ -55,11 +57,13 @@ class ScanLookupService
 
     private function productResult(Product $product): array
     {
+        $product->loadMissing(['category:id,name', 'unit:id,name,short_name']);
+
         return [
             'type' => 'product',
             'product' => $product,
             'stocks' => $product->stocks()
-                ->with(['location', 'batch'])
+                ->with(['location', 'batch', 'product:id,name,sku'])
                 ->where('quantity', '>', 0)
                 ->get(),
         ];
@@ -67,12 +71,14 @@ class ScanLookupService
 
     private function batchResult(Batch $batch): array
     {
+        $batch->loadMissing(['product.category:id,name', 'product.unit:id,name,short_name', 'supplier:id,name']);
+
         return [
             'type' => 'batch',
             'batch' => $batch,
             'product' => $batch->product,
             'stocks' => $batch->stocks()
-                ->with('location')
+                ->with(['location', 'product:id,name,sku'])
                 ->where('quantity', '>', 0)
                 ->get(),
         ];
@@ -84,7 +90,7 @@ class ScanLookupService
             'type' => 'location',
             'location' => $location,
             'stocks' => $location->stocks()
-                ->with(['product', 'batch'])
+                ->with(['product.category:id,name', 'product.unit:id,name,short_name', 'batch'])
                 ->where('quantity', '>', 0)
                 ->get(),
         ];

@@ -46,6 +46,7 @@ class DashboardController extends Controller
             ->map(fn ($batch) => [
                 'product' => $batch->product->name,
                 'batch' => $batch->batch_number,
+                'expiry_date' => $batch->expiry_date->toDateString(),
                 'daysLeft' => Carbon::now()->diffInDays($batch->expiry_date),
             ]);
 
@@ -59,9 +60,9 @@ class DashboardController extends Controller
             ->get()
             ->map(fn ($item) => [
                 'name' => $item->name,
-                'current' => (int)$item->totalQty,
+                'current' => (int) $item->totalQty,
                 'minimum' => $item->min_stock,
-                'shortage' => $item->min_stock - (int)$item->totalQty,
+                'shortage' => $item->min_stock - (int) $item->totalQty,
             ]);
 
         $recentMovements = StockMovement::with('product')
@@ -69,20 +70,52 @@ class DashboardController extends Controller
             ->limit(5)
             ->get()
             ->map(fn ($movement) => [
-                'product' => $movement->product->name,
-                'type' => $movement->movement_type,
-                'quantity' => $movement->quantity,
+                'product' => $movement->product?->name ?? '-',
+                'type' => $movement->type,
+                'quantity' => (float) $movement->qty,
                 'date' => $movement->created_at,
             ]);
+
+        // Grafik Masuk vs Keluar: agregasi mutasi 30 hari terakhir.
+        $chartStart = Carbon::today()->subDays(29)->startOfDay();
+        $chartEnd = Carbon::today()->endOfDay();
+
+        $chartRows = StockMovement::query()
+            ->whereBetween('created_at', [$chartStart, $chartEnd])
+            ->selectRaw('DATE(created_at) as date')
+            ->selectRaw('SUM(CASE WHEN qty > 0 THEN qty ELSE 0 END) as in_qty')
+            ->selectRaw('SUM(CASE WHEN qty < 0 THEN -qty ELSE 0 END) as out_qty')
+            ->groupByRaw('DATE(created_at)')
+            ->orderByRaw('DATE(created_at)')
+            ->get()
+            ->keyBy(fn ($row) => Carbon::parse($row->date)->toDateString());
+
+        $chartLabels = [];
+        $chartIn = [];
+        $chartOut = [];
+
+        for ($i = 29; $i >= 0; $i--) {
+            $day = Carbon::today()->subDays($i)->toDateString();
+            $row = $chartRows->get($day);
+
+            $chartLabels[] = $day;
+            $chartIn[] = (float) ($row->in_qty ?? 0);
+            $chartOut[] = (float) ($row->out_qty ?? 0);
+        }
 
         return Inertia::render('Dashboard', [
             'stats' => [
                 ['label' => 'Total SKU Aktif', 'value' => $totalSKU, 'icon' => 'package', 'color' => 'lime'],
-                ['label' => 'Nilai Stok', 'value' => 'Rp ' . number_format((int)$nilaiStok / 1000000, 1) . 'M', 'icon' => 'wallet', 'color' => 'violet-text'],
+                ['label' => 'Nilai Stok', 'value' => 'Rp '.number_format((int) $nilaiStok, 0, ',', '.'), 'icon' => 'wallet', 'color' => 'violet-text'],
                 ['label' => 'Stok Menipis', 'value' => $stokMenipis, 'icon' => 'alert', 'color' => 'yellow-400'],
                 ['label' => 'Akan Kedaluwarsa', 'value' => $akanKedaluwarsa, 'icon' => 'clock', 'color' => 'red-400'],
             ],
             'expiringBatches' => $expiringBatches,
+            'movementChart' => [
+                'labels' => $chartLabels,
+                'in' => $chartIn,
+                'out' => $chartOut,
+            ],
             'lowStockItems' => $lowStockItems,
             'recentMovements' => $recentMovements,
         ]);

@@ -13,27 +13,27 @@ class SupplierSeeder extends Seeder
     {
         $suppliers = [
             [
-                'name' => 'PT Supplier A',
-                'phone' => '082123456789',
-                'email' => 'suppliera@test.com',
-                'address' => 'Jln. A No. 1, Jakarta',
+                'name' => 'PT Medika Nusantara',
+                'phone' => '082112345678',
+                'email' => 'sales@medikanusantara.co.id',
+                'address' => 'Jl. Mangga Dua Raya No. 12, Jakarta Utara',
             ],
             [
-                'name' => 'PT Supplier B',
-                'phone' => '082234567890',
-                'email' => 'supplierb@test.com',
-                'address' => 'Jln. B No. 2, Bandung',
+                'name' => 'CV Farma Sehat Mandiri',
+                'phone' => '082223456789',
+                'email' => 'halo@farmasehatmandiri.id',
+                'address' => 'Jl. ABC No. 45, Bandung',
             ],
             [
-                'name' => 'CV Supplier C',
-                'phone' => '082345678901',
-                'email' => 'supplierc@test.com',
-                'address' => 'Jln. C No. 3, Surabaya',
+                'name' => 'PT Anugerah Niaga Supply',
+                'phone' => '082334567890',
+                'email' => 'purchasing@anugerahniaga.co.id',
+                'address' => 'Jl. Rungkut Industri III No. 8, Surabaya',
             ],
         ];
 
         foreach ($suppliers as $supplier) {
-            Supplier::create($supplier);
+            Supplier::firstOrCreate(['name' => $supplier['name']], $supplier);
         }
     }
 }

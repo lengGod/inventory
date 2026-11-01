@@ -5,8 +5,9 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { formatNumber } from '@/Utils/format';
 
-defineProps({
+const props = defineProps({
     products: Array,
 });
 
@@ -21,7 +22,7 @@ const selectedQuantity = ref(1);
 const addItem = () => {
     if (!selectedProduct.value || !selectedQuantity.value) return;
 
-    const product = products.find(p => p.id === parseInt(selectedProduct.value));
+    const product = props.products.find(p => p.id === parseInt(selectedProduct.value));
     
     form.items.push({
         product_id: product.id,
@@ -111,7 +112,7 @@ const totalQty = () => {
                                         <tr v-for="(item, idx) in form.items" :key="idx" class="border-b border-line">
                                             <td class="py-3 px-4">{{ item.sku }}</td>
                                             <td class="py-3 px-4">{{ item.product_name }}</td>
-                                            <td class="py-3 px-4 text-center font-semibold">{{ item.quantity }}</td>
+                                            <td class="py-3 px-4 text-center font-semibold">{{ formatNumber(item.quantity) }}</td>
                                             <td class="py-3 px-4 text-right">
                                                 <button @click="removeItem(idx)" class="text-red-400 text-xs font-semibold hover:underline">
                                                     Hapus
@@ -126,7 +127,7 @@ const totalQty = () => {
 
                     <!-- Summary -->
                     <div class="space-y-4">
-                        <Card class="sticky top-24">
+                        <Card class="sticky top-[7rem]">
                             <h2 class="text-xl font-bold text-ink font-display mb-4">Ringkasan</h2>
                             
                             <div class="space-y-3 mb-6 pb-6 border-b-2 border-line">

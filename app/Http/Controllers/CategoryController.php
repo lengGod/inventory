@@ -10,10 +10,18 @@ use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->query('search');
+        $categories = Category::query()
+            ->when($search, fn($q) => $q->where('name', 'like', "%{$search}%"))
+            ->orderBy('name')
+            ->paginate(10)
+            ->withQueryString();
+
         return Inertia::render('Categories/Index', [
-            'categories' => Category::orderBy('name')->get(),
+            'categories' => $categories,
+            'filters' => ['search' => $search],
         ]);
     }
 
