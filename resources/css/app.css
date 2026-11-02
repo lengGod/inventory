@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+    /* Keep the hard shadow limited to table containers only. */
+    .border-2:has(> table),
+    .border-2:has(> .overflow-x-auto > table) {
+        box-shadow: 6px 6px 0 #14123A;
+    }
+}
+
 @layer utilities {
     @keyframes slide-in {
         from {

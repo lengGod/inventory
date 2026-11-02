@@ -98,17 +98,19 @@ const executeDelete = () => {
                                         </StatusChip>
                                     </td>
                                     <td class="py-3 px-4 text-muted text-xs">{{ doc.creator?.name }}</td>
-                                    <td class="py-3 px-4 text-right space-x-2">
-                                        <Link :href="route('stock-ins.show', doc.id)">
-                                            <SecondaryButton class="text-xs">Lihat</SecondaryButton>
+                                    <td class="py-3 px-4 text-right">
+                                        <div class="inline-flex items-center border-2 border-ink bg-surface shadow-hard">
+                                        <Link :href="route('stock-ins.show', doc.id)" class="inline-flex h-9 items-center px-3 text-xs font-semibold text-ink hover:bg-hi">
+                                            Lihat
                                         </Link>
                                         <button 
                                             v-if="can('manage_transactions')"
                                             @click="confirmDelete(doc)"
-                                            class="inline-flex items-center justify-center h-10 px-4 text-xs font-semibold text-red-400 border-2 border-red-400 bg-transparent hover:bg-red-400/10 transition"
+                                            class="inline-flex h-9 items-center border-l-2 border-ink px-3 text-xs font-semibold text-bad-fg hover:bg-bad-bg"
                                         >
                                             Hapus
                                         </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>

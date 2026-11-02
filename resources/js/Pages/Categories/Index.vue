@@ -121,7 +121,7 @@ const executeDelete = () => {
                                         <SecondaryButton @click="openModal(cat)" class="text-xs">Ubah</SecondaryButton>
                                         <button 
                                             @click="confirmDelete(cat)"
-                                            class="inline-flex items-center justify-center h-10 px-4 text-xs font-semibold text-red-400 border-2 border-red-400 bg-transparent hover:bg-red-400/10 transition"
+                                            class="inline-flex h-9 items-center border-l-2 border-ink px-3 text-xs font-semibold text-bad-fg hover:bg-bad-bg"
                                         >
                                             Hapus
                                         </button>

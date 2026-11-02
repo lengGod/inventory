@@ -130,14 +130,16 @@ const executeDelete = () => {
                                     <td class="py-4 px-4">{{ sup.name }}</td>
                                     <td class="py-4 px-4 text-muted text-xs">{{ sup.phone || '-' }}</td>
                                     <td class="py-4 px-4 text-muted text-xs">{{ sup.email || '-' }}</td>
-                                    <td v-if="can('manage_master_data')" class="py-4 px-4 text-right space-x-2">
-                                        <SecondaryButton @click="openModal(sup)" class="text-xs">Ubah</SecondaryButton>
+                                    <td v-if="can('manage_master_data')" class="py-4 px-4 text-right">
+                                        <div class="inline-flex items-center border-2 border-ink bg-surface shadow-hard">
+                                            <button @click="openModal(sup)" class="inline-flex h-9 items-center px-3 text-xs font-semibold text-ink hover:bg-hi">Ubah</button>
                                         <button 
                                             @click="confirmDelete(sup)"
-                                            class="inline-flex items-center justify-center h-10 px-4 text-xs font-semibold text-red-400 border-2 border-red-400 bg-transparent hover:bg-red-400/10 transition"
+                                            class="inline-flex h-9 items-center border-l-2 border-ink px-3 text-xs font-semibold text-bad-fg hover:bg-bad-bg"
                                         >
                                             Hapus
                                         </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>

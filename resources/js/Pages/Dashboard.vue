@@ -2,14 +2,13 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Card from '@/Components/Card.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
-import SecondaryButton from '@/Components/SecondaryButton.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import { formatDateLong, formatDateShort, formatNumber } from '@/Utils/format';
 import { useAuthorization } from '@/Utils/authorization';
 import MovementChart from '@/Components/MovementChart.vue';
-import { ChartColumn, Clock, Package, TrendingUp, TriangleAlert, Wallet } from '@lucide/vue';
+import { ChartColumn, Clock, Package, Search, TrendingUp, TriangleAlert, Wallet } from '@lucide/vue';
 
 const page = usePage();
 const { can } = useAuthorization();
@@ -19,6 +18,33 @@ const expiringBatches = computed(() => page.props.expiringBatches);
 const lowStockItems = computed(() => page.props.lowStockItems);
 const recentMovements = computed(() => page.props.recentMovements);
 const movementChart = computed(() => page.props.movementChart ?? { labels: [], in: [], out: [] });
+const globalSearch = ref(page.props.globalSearch ?? '');
+const globalResults = ref(page.props.globalResults ?? []);
+let globalSearchTimer;
+
+const runGlobalSearch = async () => {
+    const search = globalSearch.value.trim();
+
+    if (!search) {
+        globalResults.value = [];
+        return;
+    }
+
+    const response = await fetch(`${route('dashboard.search')}?search=${encodeURIComponent(search)}`, {
+        headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    });
+
+    if (response.ok) {
+        globalResults.value = (await response.json()).results ?? [];
+    }
+};
+
+watch(globalSearch, () => {
+    clearTimeout(globalSearchTimer);
+    globalSearchTimer = setTimeout(runGlobalSearch, 300);
+});
+
+onUnmounted(() => clearTimeout(globalSearchTimer));
 
 const cardTone = (color) => ({
     lime: 'lime',
@@ -92,8 +118,24 @@ const getMovementTypeColor = (type) => {
                         <p class="text-muted text-sm">Selamat pagi</p>
                         <h1 class="text-display font-bold text-3xl sm:text-4xl text-ink">{{ user.name }}</h1>
                     </div>
-                    <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                        <SecondaryButton class="w-full sm:w-auto">Pencarian Global</SecondaryButton>
+                    <div class="relative flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-start">
+                        <form class="flex w-full sm:w-80" @submit.prevent="runGlobalSearch">
+                            <div class="relative flex-1">
+                                <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+                                <input v-model="globalSearch" type="search" placeholder="Cari produk, supplier, batch..." class="h-12 w-full border-2 border-ink bg-surface pl-10 pr-3 text-sm text-ink focus:outline-none" />
+                            </div>
+                            <button type="submit" class="h-12 border-2 border-l-0 border-ink bg-ink px-4 text-xs font-bold text-white hover:bg-ink-3">Cari</button>
+                        </form>
+                        <div v-if="globalSearch.trim()" class="absolute right-0 top-14 z-30 w-full border-2 border-ink bg-surface p-2 shadow-hard sm:w-80">
+                            <Link v-for="result in globalResults" :key="result.type + result.url" :href="result.url" class="flex items-center justify-between gap-3 border-b border-line px-3 py-2 last:border-0 hover:bg-surface-2">
+                                <span class="min-w-0">
+                                    <span class="block truncate text-sm font-semibold text-ink">{{ result.label }}</span>
+                                    <span class="block truncate text-xs text-muted">{{ result.meta }}</span>
+                                </span>
+                                <span class="shrink-0 text-[10px] font-bold uppercase text-violet-text">{{ result.type }}</span>
+                            </Link>
+                            <p v-if="!globalResults.length" class="px-3 py-3 text-xs text-muted">Tidak ada hasil ditemukan.</p>
+                        </div>
                         <PrimaryButton v-if="can('manage_transactions')" as="link" :href="route('stock-ins.create')" class="w-full sm:w-auto">+ Barang Masuk</PrimaryButton>
                     </div>
                 </div>

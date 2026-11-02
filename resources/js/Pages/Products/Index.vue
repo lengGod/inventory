@@ -108,20 +108,22 @@ const executeDelete = () => {
                                     <td class="py-4 px-4">{{ product.category?.name }}</td>
                                     <td class="py-4 px-4">{{ product.unit?.short_name }}</td>
                                     <td class="py-4 px-4">{{ product.track_batch ? '✓' : '-' }}</td>
-                                    <td class="py-4 px-4 text-right space-x-2">
-                                        <Link :href="route('products.show', product.id)">
-                                            <SecondaryButton class="text-xs">Lihat</SecondaryButton>
-                                        </Link>
+                                    <td class="py-4 px-4 text-right">
+                                        <div class="inline-flex items-center border-2 border-ink bg-surface shadow-hard">
+                                            <Link :href="route('products.show', product.id)" class="inline-flex h-9 items-center px-3 text-xs font-semibold text-ink hover:bg-hi">
+                                                Detail
+                                            </Link>
                                         <Link v-if="can('manage_master_data')" :href="route('products.edit', product.id)">
-                                            <SecondaryButton class="text-xs">Ubah</SecondaryButton>
+                                            <span class="inline-flex h-9 items-center border-l-2 border-ink px-3 text-xs font-semibold text-ink hover:bg-hi">Edit</span>
                                         </Link>
                                         <button 
                                             v-if="can('manage_master_data')"
                                             @click="confirmDelete(product)"
-                                            class="inline-flex items-center justify-center h-10 px-4 text-xs font-semibold text-red-400 border-2 border-red-400 bg-transparent hover:bg-red-400/10 transition"
+                                            class="inline-flex h-9 items-center border-l-2 border-ink px-3 text-xs font-semibold text-bad-fg hover:bg-bad-bg"
                                         >
                                             Hapus
                                         </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>

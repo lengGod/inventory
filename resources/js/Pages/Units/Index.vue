@@ -122,14 +122,16 @@ const executeDelete = () => {
                                 <tr v-for="unit in units.data" :key="unit.id" class="border-b border-surface-2 hover:bg-surface-2">
                                     <td class="py-4 px-4">{{ unit.name }}</td>
                                     <td class="py-4 px-4">{{ unit.short_name }}</td>
-                                    <td v-if="can('manage_master_data')" class="py-4 px-4 text-right space-x-2">
-                                        <SecondaryButton @click="openModal(unit)" class="text-xs">Ubah</SecondaryButton>
+                                    <td v-if="can('manage_master_data')" class="py-4 px-4 text-right">
+                                        <div class="inline-flex items-center border-2 border-ink bg-surface shadow-hard">
+                                            <button @click="openModal(unit)" class="inline-flex h-9 items-center px-3 text-xs font-semibold text-ink hover:bg-hi">Ubah</button>
                                         <button 
                                             @click="confirmDelete(unit)"
-                                            class="inline-flex items-center justify-center h-10 px-4 text-xs font-semibold text-red-400 border-2 border-red-400 bg-transparent hover:bg-red-400/10 transition"
+                                            class="inline-flex h-9 items-center border-l-2 border-ink px-3 text-xs font-semibold text-bad-fg hover:bg-bad-bg"
                                         >
                                             Hapus
                                         </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>

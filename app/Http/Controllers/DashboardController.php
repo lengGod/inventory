@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Batch;
+use App\Models\Product;
 use App\Models\Stock;
 use App\Models\StockMovement;
+use App\Models\Supplier;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,6 +20,7 @@ class DashboardController extends Controller
 {
     public function index(): Response
     {
+        $search = trim((string) request()->query('search', ''));
         $totalSKU = Stock::where('quantity', '>', 0)
             ->distinct('product_id')
             ->count('product_id');
@@ -104,6 +109,8 @@ class DashboardController extends Controller
         }
 
         return Inertia::render('Dashboard', [
+            'globalSearch' => $search,
+            'globalResults' => $this->globalSearchResults($search),
             'stats' => [
                 ['label' => 'Total SKU Aktif', 'value' => $totalSKU, 'icon' => 'package', 'color' => 'lime'],
                 ['label' => 'Nilai Stok', 'value' => 'Rp '.number_format((int) $nilaiStok, 0, ',', '.'), 'icon' => 'wallet', 'color' => 'violet-text'],
@@ -119,5 +126,27 @@ class DashboardController extends Controller
             'lowStockItems' => $lowStockItems,
             'recentMovements' => $recentMovements,
         ]);
+    }
+
+    public function search(Request $request): JsonResponse
+    {
+        return response()->json([
+            'results' => $this->globalSearchResults(trim((string) $request->query('search', ''))),
+        ]);
+    }
+
+    private function globalSearchResults(string $search): array
+    {
+        if ($search === '') {
+            return [];
+        }
+
+        $products = Product::query()->where(function ($query) use ($search): void {
+            $query->where('name', 'like', "%{$search}%")->orWhere('sku', 'like', "%{$search}%")->orWhere('barcode', 'like', "%{$search}%");
+        })->limit(5)->get(['id', 'name', 'sku'])->map(fn (Product $product): array => ['type' => 'Produk', 'label' => $product->name, 'meta' => $product->sku, 'url' => route('products.show', $product)]);
+        $suppliers = Supplier::query()->where('name', 'like', "%{$search}%")->limit(5)->get(['id', 'name', 'phone'])->map(fn (Supplier $supplier): array => ['type' => 'Supplier', 'label' => $supplier->name, 'meta' => $supplier->phone ?: 'Data supplier', 'url' => route('suppliers.show', $supplier)]);
+        $batches = Batch::query()->with('product:id,name')->where('batch_number', 'like', "%{$search}%")->limit(5)->get(['id', 'batch_number', 'product_id'])->map(fn (Batch $batch): array => ['type' => 'Batch', 'label' => $batch->batch_number, 'meta' => $batch->product?->name ?? 'Batch stok', 'url' => route('batches.index', ['search' => $batch->batch_number])]);
+
+        return $products->concat($suppliers)->concat($batches)->values()->all();
     }
 }
