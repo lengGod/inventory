@@ -199,12 +199,54 @@ const useQuickPick = (pick) => {
     submitLookup(pick.code);
 };
 
-const stopCamera = async () => {
-    scanning.value = false;
+const SCAN_READER_ID = 'scan-reader';
 
-    const instance = scannerInstance;
-    scannerInstance = null;
+const cameraErrorMessage = (error) => {
+    const name = error?.name || '';
+    const message = String(error?.message ?? error ?? '');
+    const details = `${name} ${message}`;
 
+    if (!window.isSecureContext) {
+        return 'Kamera hanya bisa diakses melalui HTTPS. Buka situs dengan alamat https:// lalu coba lagi.';
+    }
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+        return 'Browser ini tidak mendukung akses kamera. Gunakan Chrome, Edge, atau Safari terbaru.';
+    }
+
+    if (/NotAllowed|Permission|denied/i.test(details)) {
+        return 'Izin kamera ditolak. Di browser, buka Pengaturan Situs > Kamera > Izinkan, lalu muat ulang halaman.';
+    }
+
+    if (/NotFound|DevicesNotFound/i.test(details)) {
+        return 'Kamera tidak ditemukan. Pastikan perangkat memiliki kamera dan tidak sedang dipakai aplikasi lain.';
+    }
+
+    if (/NotReadable|TrackStart/i.test(details)) {
+        return 'Kamera sedang dipakai aplikasi lain. Tutup aplikasi kamera lain, lalu tekan Buka Kamera lagi.';
+    }
+
+    if (/Overconstrained|ConstraintNotSatisfied/i.test(details)) {
+        return 'Kamera belakang tidak tersedia. Coba kamera depan atau perangkat lain.';
+    }
+
+    return 'Kamera gagal dimulai. Tutup aplikasi lain yang memakai kamera, lalu coba lagi.';
+};
+
+const isCameraPermissionError = (error) => /NotAllowed|Permission|denied/i.test(`${error?.name || ''} ${error?.message || error || ''}`);
+
+const buildScanConfig = () => ({
+    fps: 10,
+    aspectRatio: 1.0,
+    qrbox: (viewfinderWidth, viewfinderHeight) => {
+        const width = Math.max(140, Math.min(Math.floor(viewfinderWidth * 0.8), 320));
+        const height = Math.max(90, Math.min(Math.floor(viewfinderHeight * 0.5), Math.floor(width * 0.62)));
+
+        return { width, height };
+    },
+});
+
+const disposeScanner = async (instance) => {
     if (!instance) {
         return;
     }
@@ -220,6 +262,69 @@ const stopCamera = async () => {
     } catch {
         // Scanner container might already be cleared.
     }
+};
+
+const createScanner = () => {
+    const instance = new Html5Qrcode(SCAN_READER_ID, { verbose: false });
+    scannerInstance = instance;
+
+    return instance;
+};
+
+const startScanner = async (instance) => {
+    try {
+        await instance.start(
+            { facingMode: 'environment' },
+            buildScanConfig(),
+            handleScanSuccess,
+            () => {},
+        );
+    } catch (error) {
+        if (isCameraPermissionError(error)) {
+            throw error;
+        }
+
+        // Sebagian browser mobile menolak facingMode walau kamera belakang tersedia.
+        // Coba lagi memakai deviceId kamera belakang.
+        await disposeScanner(instance);
+        await new Promise((resolve) => setTimeout(resolve, 250));
+
+        let cameras = [];
+
+        try {
+            cameras = await Html5Qrcode.getCameras();
+        } catch (cameraListError) {
+            if (isCameraPermissionError(cameraListError)) {
+                throw cameraListError;
+            }
+
+            throw error;
+        }
+
+        if (!cameras.length) {
+            throw error;
+        }
+
+        const backCamera = cameras.find((camera) => /back|rear|environment|belakang/i.test(camera.label));
+        const camera = backCamera ?? cameras[cameras.length - 1];
+        const retryInstance = createScanner();
+
+        await retryInstance.start(
+            { deviceId: { exact: camera.id } },
+            buildScanConfig(),
+            handleScanSuccess,
+            () => {},
+        );
+    }
+};
+
+const stopCamera = async () => {
+    scanning.value = false;
+
+    const instance = scannerInstance;
+    scannerInstance = null;
+
+    await disposeScanner(instance);
 };
 
 const handleScanSuccess = (decodedText) => {
@@ -241,28 +346,32 @@ const startCamera = async () => {
     scanning.value = true;
     await nextTick();
 
-    try {
-        const instance = new Html5Qrcode('scan-reader', { verbose: false });
-        scannerInstance = instance;
+    if (!document.getElementById(SCAN_READER_ID)) {
+        cameraError.value = 'Area kamera tidak ditemukan. Muat ulang halaman lalu coba lagi.';
+        scanning.value = false;
 
-        await instance.start(
-            { facingMode: 'environment' },
-            { fps: 10, qrbox: { width: 260, height: 180 } },
-            handleScanSuccess,
-            () => {},
-        );
-    } catch {
-        cameraError.value = 'Kamera tidak dapat diakses. Pastikan izin kamera aktif dan halaman dibuka melalui HTTPS atau localhost.';
+        return;
+    }
+
+    try {
+        if (!window.isSecureContext) {
+            throw new Error('Kamera membutuhkan HTTPS.');
+        }
+
+        if (!navigator.mediaDevices?.getUserMedia) {
+            throw new Error('Browser tidak mendukung akses kamera.');
+        }
+
+        await startScanner(createScanner());
+    } catch (error) {
+        console.error('[kamera]', error);
+        cameraError.value = cameraErrorMessage(error);
         scanning.value = false;
 
         const instance = scannerInstance;
         scannerInstance = null;
 
-        try {
-            instance?.clear();
-        } catch {
-            // Ignore cleanup errors.
-        }
+        await disposeScanner(instance);
     }
 };
 
@@ -380,7 +489,7 @@ onBeforeUnmount(() => {
 
                 <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
                     <!-- Scanner + result -->
-                    <div class="xl:col-span-3 space-y-6">
+                    <div class="min-w-0 xl:col-span-3 space-y-6">
                         <Card>
                             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                                 <div>
@@ -429,7 +538,7 @@ onBeforeUnmount(() => {
                             </p>
 
                             <div v-show="scanning" class="mt-4">
-                                <div id="scan-reader" class="w-full max-w-md mx-auto overflow-hidden border-2 border-ink bg-ink"></div>
+                                <div id="scan-reader" class="mx-auto min-h-[220px] w-full max-w-md overflow-hidden border-2 border-ink bg-ink"></div>
                                 <p class="text-center text-muted text-xs mt-2">Arahkan kamera ke barcode hingga terbaca otomatis.</p>
                             </div>
 
@@ -482,7 +591,7 @@ onBeforeUnmount(() => {
                                 </div>
                             </div>
 
-                            <div v-if="result.stocks?.length" class="overflow-x-auto">
+                            <div class="overflow-x-auto">
                                 <table class="w-full text-sm">
                                     <thead>
                                         <tr class="border-b-2 border-line">
@@ -499,6 +608,9 @@ onBeforeUnmount(() => {
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <tr v-if="!result.stocks?.length">
+                                            <td colspan="4" class="px-4 py-10 text-center text-sm text-muted">Tidak ada stok aktif untuk data ini.</td>
+                                        </tr>
                                         <tr v-for="stock in result.stocks" :key="stock.id" class="border-b border-surface-2">
                                             <td class="py-2 px-3 font-semibold">{{ stock.location?.code || '-' }}</td>
                                             <template v-if="result.type !== 'location'">
@@ -521,7 +633,6 @@ onBeforeUnmount(() => {
                                     </tbody>
                                 </table>
                             </div>
-                            <p v-else class="text-muted text-sm py-4">Tidak ada stok aktif untuk data ini.</p>
                         </Card>
 
                         <Card v-else class="border-dashed">
@@ -534,7 +645,7 @@ onBeforeUnmount(() => {
                     </div>
 
                     <!-- Label studio -->
-                    <div class="xl:col-span-2 space-y-6">
+                    <div class="min-w-0 xl:col-span-2 space-y-6">
                         <Card class="border-t-4 border-t-violet-text">
                             <h2 class="text-xl font-bold text-ink font-display flex items-center gap-2">
                                 <Tag class="w-5 h-5" />
@@ -647,12 +758,7 @@ onBeforeUnmount(() => {
                         <p class="text-muted text-xs">20 cetak terakhir</p>
                     </div>
 
-                    <div v-if="historyList.length === 0" class="text-center py-8">
-                        <History class="w-8 h-8 text-muted mx-auto mb-2" />
-                        <p class="text-muted text-sm">Belum ada label yang dicetak.</p>
-                    </div>
-
-                    <div v-else class="overflow-x-auto">
+                    <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b-2 border-line">
@@ -665,6 +771,9 @@ onBeforeUnmount(() => {
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr v-if="historyList.length === 0">
+                                    <td colspan="6" class="px-4 py-10 text-center text-sm text-muted">Belum ada label yang dicetak.</td>
+                                </tr>
                                 <tr v-for="log in historyList" :key="log.id" class="border-b border-surface-2 hover:bg-surface-2">
                                     <td class="py-3 px-3 whitespace-nowrap">{{ formatDateTime(log.created_at) }}</td>
                                     <td class="py-3 px-3 font-semibold">{{ log.reference_label || '-' }}</td>

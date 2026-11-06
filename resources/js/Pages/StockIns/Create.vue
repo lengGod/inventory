@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Card from '@/Components/Card.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import MoneyInput from '@/Components/MoneyInput.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import { formatNumber, formatRupiah } from '@/Utils/format';
@@ -132,7 +133,7 @@ const getLocationName = (locationId) => {
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-muted mb-1">Harga/Unit</label>
-                            <input v-model="newItem.unit_price" type="number" step="0.01" placeholder="0" class="w-full h-12 px-3 border-2 border-line text-xs focus:border-ink focus:outline-none" />
+                            <MoneyInput v-model="newItem.unit_price" placeholder="Rp 0" />
                         </div>
                         <div class="flex items-end">
                             <PrimaryButton @click="addItem" class="w-full">Tambah</PrimaryButton>
@@ -143,10 +144,7 @@ const getLocationName = (locationId) => {
                 <!-- Items Table -->
                 <Card class="mb-6">
                     <h2 class="text-xl font-bold text-ink font-display mb-4">Item Diterima</h2>
-                    <div v-if="form.items.length === 0" class="text-center py-8">
-                        <p class="text-muted text-sm">Belum ada item. Tambahkan item di atas.</p>
-                    </div>
-                    <div v-else class="overflow-x-auto">
+                    <div class="overflow-x-auto">
                         <table class="w-full text-xs">
                             <thead>
                                 <tr class="border-b-2 border-line">
@@ -158,6 +156,9 @@ const getLocationName = (locationId) => {
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr v-if="form.items.length === 0">
+                                    <td colspan="5" class="px-4 py-10 text-center text-sm text-muted">Belum ada item. Tambahkan item di atas.</td>
+                                </tr>
                                 <tr v-for="(item, idx) in form.items" :key="idx" class="border-b border-surface-2 hover:bg-surface-2">
                                     <td class="py-3 px-4">{{ getProductName(item.product_id) }}</td>
                                     <td class="py-3 px-4">{{ getLocationName(item.location_id) }}</td>

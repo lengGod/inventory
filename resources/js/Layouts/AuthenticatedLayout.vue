@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
-import { ChevronDown, Menu, ScanBarcode, UserRound, X } from '@lucide/vue';
+import { ArrowLeftRight, ChevronDown, LayoutDashboard, Menu, Package, ScanBarcode, UserRound, X } from '@lucide/vue';
 import AttributionBanner from '@/Components/AttributionBanner.vue';
 import FlashMessage from '@/Components/FlashMessage.vue';
 import { useAuthorization } from '@/Utils/authorization';
@@ -51,6 +51,28 @@ const visibleNavigation = computed(() => navigation
         : group)
     .filter((group) => group.direct || group.items.length > 0));
 
+const mobileNavItems = computed(() => {
+    const items = [
+        { label: 'Dashboard', route: 'dashboard', icon: LayoutDashboard },
+        { label: 'Barang', route: 'products.index', icon: Package, matches: ['products.*'] },
+    ];
+
+    if (can('print_labels')) {
+        items.push({ label: 'Scan', route: 'scan-label.index', icon: ScanBarcode, matches: ['scan-label.*'] });
+    } else {
+        items.push({ label: 'Batch', route: 'batches.index', icon: Package, matches: ['batches.*'] });
+    }
+
+    items.push({
+        label: 'Transaksi',
+        route: 'stock-ins.index',
+        icon: ArrowLeftRight,
+        matches: ['stock-ins.*', 'stock-outs.*', 'stock-adjustments.*'],
+    });
+
+    return items;
+});
+
 const toggleDropdown = (label) => {
     activeDropdown.value = activeDropdown.value === label ? null : label;
 };
@@ -70,7 +92,15 @@ const closeMobileMenu = () => {
 };
 
 const isItemActive = (item) => {
-    return route().current(item.route) || (item.match ? route().current(item.match) : false);
+    if (route().current(item.route)) {
+        return true;
+    }
+
+    if (Array.isArray(item.matches)) {
+        return item.matches.some((pattern) => route().current(pattern));
+    }
+
+    return item.match ? route().current(item.match) : false;
 };
 
 const isDropdownActive = (dropdownItems) => {
@@ -84,7 +114,7 @@ watch(showMobileMenu, (val) => {
 </script>
 
 <template>
-    <div>
+    <div class="overflow-x-hidden lg:overflow-x-visible">
         <FlashMessage />
 
         <!-- Attribution Banner -->
@@ -95,13 +125,9 @@ watch(showMobileMenu, (val) => {
             <div class="flex items-center justify-between w-full max-w-full gap-2">
                 <!-- Left: Hamburger + Logo -->
                 <div class="flex items-center gap-2 flex-shrink-0">
-                    <!-- Hamburger (mobile) -->
-                    <button @click="showMobileMenu = true" class="lg:hidden text-white hover:text-lime transition p-2 -ml-2" aria-label="Buka menu">
-                        <Menu class="w-6 h-6" />
-                    </button>
-
-                    <Link :href="route('dashboard')" class="text-lime font-bold text-lg sm:text-xl font-display hover:text-yellow-300 transition flex-shrink-0">
-                        GudangKu
+                    <Link :href="route('dashboard')" class="flex items-center gap-2 text-lime font-bold text-lg sm:text-xl font-display hover:text-yellow-300 transition flex-shrink-0">
+                        <img src="/favicon.svg" alt="Logo GudangKu" class="h-8 w-8 rounded-md object-contain" />
+                        <span>GudangKu</span>
                     </Link>
                 </div>
 
@@ -184,8 +210,9 @@ watch(showMobileMenu, (val) => {
             <aside v-if="showMobileMenu" class="lg:hidden fixed top-0 left-0 bottom-0 w-72 max-w-[85vw] bg-ink z-[9999] flex flex-col shadow-hard">
                 <!-- Drawer Header -->
                 <div class="h-16 flex items-center justify-between px-4 border-b border-ink-3 flex-shrink-0">
-                    <Link :href="route('dashboard')" @click="closeMobileMenu" class="text-lime font-bold text-xl font-display">
-                        GudangKu
+                    <Link :href="route('dashboard')" @click="closeMobileMenu" class="flex items-center gap-2 text-lime font-bold text-xl font-display">
+                        <img src="/favicon.svg" alt="Logo GudangKu" class="h-8 w-8 rounded-md object-contain" />
+                        <span>GudangKu</span>
                     </Link>
                     <button @click="closeMobileMenu" class="text-white hover:text-lime transition p-2 -mr-2" aria-label="Tutup menu">
                         <X class="w-6 h-6" />
@@ -232,8 +259,26 @@ watch(showMobileMenu, (val) => {
         </Transition>
 
         <!-- Page Content -->
-        <div class="mt-[6.25rem] bg-canvas min-h-screen overflow-visible">
+        <div class="mt-[6.25rem] min-h-screen overflow-x-hidden bg-canvas pb-28 lg:overflow-x-visible lg:pb-0">
             <slot />
         </div>
+
+        <!-- Bottom navigation (mobile) -->
+        <nav class="fixed inset-x-0 bottom-0 z-50 border-t-2 border-ink-3 bg-ink pb-[env(safe-area-inset-bottom)] lg:hidden" aria-label="Navigasi utama mobile">
+            <div class="grid h-16 grid-cols-5">
+                <Link v-for="item in mobileNavItems" :key="item.label" :href="route(item.route)"
+                    :class="['flex min-w-0 flex-col items-center justify-center gap-0.5 px-1 text-[10px] font-semibold transition', isItemActive(item) ? 'text-lime' : 'text-white/70 hover:text-lime']"
+                    :aria-current="isItemActive(item) ? 'page' : undefined">
+                    <component :is="item.icon" class="h-5 w-5 shrink-0" />
+                    <span class="w-full truncate text-center">{{ item.label }}</span>
+                </Link>
+                <button type="button" @click="showMobileMenu = true"
+                    :class="['flex min-w-0 flex-col items-center justify-center gap-0.5 px-1 text-[10px] font-semibold transition', showMobileMenu ? 'text-lime' : 'text-white/70 hover:text-lime']"
+                    aria-label="Buka menu lengkap">
+                    <Menu class="h-5 w-5 shrink-0" />
+                    <span class="w-full truncate text-center">Menu</span>
+                </button>
+            </div>
+        </nav>
     </div>
 </template>

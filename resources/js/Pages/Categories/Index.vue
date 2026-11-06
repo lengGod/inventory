@@ -103,10 +103,7 @@ const executeDelete = () => {
 
                 <!-- Table Card -->
                 <Card>
-                    <div v-if="categories.data.length === 0" class="text-center py-8">
-                        <p class="text-muted text-sm">Belum ada kategori. Buat yang pertama.</p>
-                    </div>
-                    <div v-else class="overflow-x-auto">
+                    <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b-2 border-line">
@@ -115,6 +112,9 @@ const executeDelete = () => {
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr v-if="categories.data.length === 0">
+                                    <td :colspan="can('manage_master_data') ? 2 : 1" class="px-4 py-10 text-center text-sm text-muted">Belum ada kategori. Buat yang pertama.</td>
+                                </tr>
                                 <tr v-for="cat in categories.data" :key="cat.id" class="border-b border-surface-2 hover:bg-surface-2">
                                     <td class="py-4 px-4">{{ cat.name }}</td>
                                     <td v-if="can('manage_master_data')" class="py-4 px-4 text-right space-x-2">

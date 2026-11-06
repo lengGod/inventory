@@ -72,10 +72,7 @@ const executeDelete = () => {
 
                 <!-- Table -->
                 <Card>
-                    <div v-if="!stockIns.data || stockIns.data.length === 0" class="text-center py-8">
-                        <p class="text-muted text-sm">Belum ada dokumen barang masuk</p>
-                    </div>
-                    <div v-else class="overflow-x-auto">
+                    <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b-2 border-line">
@@ -88,6 +85,9 @@ const executeDelete = () => {
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr v-if="!stockIns.data || stockIns.data.length === 0">
+                                    <td colspan="6" class="px-4 py-10 text-center text-sm text-muted">Belum ada dokumen barang masuk</td>
+                                </tr>
                                 <tr v-for="doc in stockIns.data" :key="doc.id" class="border-b border-surface-2 hover:bg-surface-2">
                                     <td class="py-3 px-4 font-semibold">{{ doc.doc_number }}</td>
                                     <td class="py-3 px-4">{{ formatDate(doc.date) }}</td>

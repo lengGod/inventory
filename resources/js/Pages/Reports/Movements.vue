@@ -153,10 +153,7 @@ const signedQty = (qty) => {
 
                 <!-- Table -->
                 <Card>
-                    <div v-if="!movements.data || movements.data.length === 0" class="text-center py-7">
-                        <p class="text-muted text-sm">Tidak ada mutasi stok pada rentang/filter ini.</p>
-                    </div>
-                    <div v-else class="overflow-x-auto">
+                    <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b-2 border-line">
@@ -171,6 +168,9 @@ const signedQty = (qty) => {
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr v-if="!movements.data || movements.data.length === 0">
+                                    <td colspan="8" class="px-4 py-10 text-center text-sm text-muted">Tidak ada mutasi stok pada rentang/filter ini.</td>
+                                </tr>
                                 <tr v-for="movement in movements.data" :key="movement.id" class="border-b border-surface-2 hover:bg-surface-2">
                                     <td class="py-3 px-4 whitespace-nowrap text-muted text-xs">{{ formatDateTime(movement.date) }}</td>
                                     <td class="py-3 px-4">

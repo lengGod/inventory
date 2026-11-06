@@ -189,12 +189,12 @@ const getMovementTypeColor = (type) => {
                             Belum ada batch yang mendekati kedaluwarsa. Bagus!
                         </div>
                         <div v-else class="space-y-2">
-                            <div v-for="batch in expiringBatches" :key="batch.batch" class="flex justify-between items-center p-3 bg-surface rounded border-l-2 border-red-400">
-                                <div>
-                                    <p class="text-sm font-semibold text-ink">{{ batch.product }}</p>
-                                    <p class="text-xs text-muted">{{ batch.batch }}</p>
+                            <div v-for="batch in expiringBatches" :key="batch.batch" class="flex justify-between items-center gap-3 p-3 bg-surface rounded border-l-2 border-red-400">
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-semibold text-ink">{{ batch.product }}</p>
+                                    <p class="truncate text-xs text-muted">{{ batch.batch }}</p>
                                 </div>
-                                <span :class="['text-sm font-semibold', batch.daysLeft <= 7 ? 'text-red-400' : 'text-muted']">{{ formatDateLong(batch.expiry_date) }}</span>
+                                <span :class="['shrink-0 text-sm font-semibold', batch.daysLeft <= 7 ? 'text-red-400' : 'text-muted']">{{ formatDateLong(batch.expiry_date) }}</span>
                             </div>
                         </div>
                     </Card>
@@ -214,12 +214,12 @@ const getMovementTypeColor = (type) => {
                             Tidak ada barang dengan stok menipis
                         </div>
                         <div v-else class="space-y-2">
-                            <div v-for="item in lowStockItems" :key="item.name" class="flex justify-between items-center p-3 bg-surface rounded border-l-2 border-yellow-400">
-                                <div>
-                                    <p class="text-sm font-semibold text-ink">{{ item.name }}</p>
-                                    <p class="text-xs text-muted">{{ formatNumber(item.current) }} / {{ formatNumber(item.minimum) }} unit</p>
+                            <div v-for="item in lowStockItems" :key="item.name" class="flex justify-between items-center gap-3 p-3 bg-surface rounded border-l-2 border-yellow-400">
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-semibold text-ink">{{ item.name }}</p>
+                                    <p class="truncate text-xs text-muted">{{ formatNumber(item.current) }} / {{ formatNumber(item.minimum) }} unit</p>
                                 </div>
-                                <span class="text-red-400 font-bold text-sm">-{{ item.shortage }}</span>
+                                <span class="shrink-0 text-red-400 font-bold text-sm">-{{ item.shortage }}</span>
                             </div>
                         </div>
                     </Card>
@@ -236,12 +236,12 @@ const getMovementTypeColor = (type) => {
                             Belum ada transaksi
                         </div>
                         <div v-else class="space-y-2">
-                            <div v-for="(movement, idx) in recentMovements" :key="idx" class="flex justify-between items-center p-3 bg-surface rounded border-l-2 border-violet-text">
-                                <div>
-                                    <p class="text-sm font-semibold text-ink">{{ movement.product }}</p>
-                                    <p :class="['text-xs', getMovementTypeColor(movement.type)]">{{ getMovementTypeLabel(movement.type) }}</p>
+                            <div v-for="(movement, idx) in recentMovements" :key="idx" class="flex justify-between items-center gap-3 p-3 bg-surface rounded border-l-2 border-violet-text">
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-semibold text-ink">{{ movement.product }}</p>
+                                    <p :class="['truncate text-xs', getMovementTypeColor(movement.type)]">{{ getMovementTypeLabel(movement.type) }}</p>
                                 </div>
-                                <div class="text-right">
+                                <div class="shrink-0 text-right">
                                     <p class="text-sm font-semibold text-ink">{{ formatNumber(movement.quantity) }}</p>
                                     <p class="text-xs text-muted">{{ formatDateShort(movement.date) }}</p>
                                 </div>

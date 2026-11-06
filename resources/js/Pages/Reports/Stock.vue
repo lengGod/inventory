@@ -102,10 +102,7 @@ watch(search, debounce(submit));
 
                 <!-- Table -->
                 <Card>
-                    <div v-if="!products.data || products.data.length === 0" class="text-center py-7">
-                        <p class="text-muted text-sm">Tidak ada barang yang cocok dengan pencarian.</p>
-                    </div>
-                    <div v-else class="overflow-x-auto">
+                    <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b-2 border-line">
@@ -120,6 +117,9 @@ watch(search, debounce(submit));
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr v-if="!products.data || products.data.length === 0">
+                                    <td colspan="8" class="px-4 py-10 text-center text-sm text-muted">Tidak ada barang yang cocok dengan pencarian.</td>
+                                </tr>
                                 <tr v-for="product in products.data" :key="product.id" class="border-b border-surface-2 hover:bg-surface-2">
                                     <td class="py-3 px-4 font-mono text-xs">{{ product.sku }}</td>
                                     <td class="py-3 px-4 font-semibold">{{ product.name }}</td>

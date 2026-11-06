@@ -10,8 +10,12 @@ let shownAt = 0;
 const start = (event) => {
     const currentUrl = new URL(window.location.href);
     const nextUrl = new URL(event.detail.visit.url, window.location.origin);
+    const isReportPath = (path) => path.startsWith('/reports/');
 
-    if (nextUrl.pathname === currentUrl.pathname) {
+    if (
+        nextUrl.pathname === currentUrl.pathname
+        || (isReportPath(currentUrl.pathname) && isReportPath(nextUrl.pathname))
+    ) {
         return;
     }
 
@@ -61,7 +65,7 @@ onUnmounted(() => {
         >
             <div
                 v-if="loading"
-                class="fixed inset-0 z-[10000] flex items-center justify-center bg-ink/40 backdrop-blur-sm"
+                class="fixed inset-0 z-[10000] flex items-center justify-center bg-ink/40 backdrop-blur-sm print:hidden"
                 role="status"
                 aria-live="polite"
             >

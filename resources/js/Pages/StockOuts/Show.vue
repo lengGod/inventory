@@ -74,6 +74,9 @@ const canPost = () => props.stockOut.status === 'draft';
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <tr v-if="!stockOut.items?.length">
+                                            <td colspan="3" class="px-4 py-10 text-center text-sm text-muted">Belum ada item</td>
+                                        </tr>
                                         <tr v-for="item in stockOut.items" :key="item.id" class="border-b border-line">
                                             <td class="py-3 px-4 font-semibold text-ink">{{ item.product_name }}</td>
                                             <td class="py-3 px-4 text-muted">{{ item.batch_number }}</td>

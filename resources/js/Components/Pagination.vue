@@ -15,7 +15,12 @@ const loading = ref(false);
 const removeStart = router.on('start', (event) => {
     const currentUrl = new URL(window.location.href);
     const nextUrl = new URL(event.detail.visit.url, window.location.origin);
-    if (nextUrl.pathname === currentUrl.pathname) {
+    const isReportPath = (path) => path.startsWith('/reports/');
+
+    if (
+        nextUrl.pathname === currentUrl.pathname
+        || (isReportPath(currentUrl.pathname) && isReportPath(nextUrl.pathname))
+    ) {
         loading.value = true;
     }
 });
@@ -40,13 +45,13 @@ const isNext = (label) => !!label && (label === 'pagination.next' || label.inclu
         <!-- Loading Overlay covering the table container Card -->
         <div
             v-if="loading"
-            class="absolute inset-0 bg-surface/80 backdrop-blur-[1px] flex items-center justify-center z-20"
+            class="absolute inset-0 z-20 flex items-center justify-center bg-surface/80 p-3 backdrop-blur-[1px] sm:p-4 print:hidden"
             role="status"
             aria-live="polite"
         >
-            <div class="bg-surface border-2 border-ink shadow-hard px-6 py-4 flex items-center gap-3">
-                <LoaderCircle class="w-6 h-6 text-violet-text animate-spin" />
-                <p class="text-xs font-semibold text-ink tracking-wide">Memuat data...</p>
+            <div class="flex w-full max-w-[240px] flex-col items-center justify-center gap-2 border-2 border-ink bg-surface px-4 py-3 text-center shadow-hard sm:w-auto sm:max-w-none sm:flex-row sm:gap-3 sm:px-6 sm:py-4">
+                <LoaderCircle class="h-5 w-5 shrink-0 text-violet-text animate-spin sm:h-6 sm:w-6" />
+                <p class="text-[11px] font-semibold text-ink tracking-wide leading-tight sm:text-xs">Memuat data...</p>
             </div>
         </div>
 

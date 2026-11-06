@@ -133,10 +133,7 @@ const formatCurrency = (val) => {
 
                     <!-- Tab: Batch -->
                     <div v-show="activeTab === 'batches'" class="space-y-4">
-                        <div v-if="!product.batches || product.batches.length === 0" class="text-center py-8">
-                            <p class="text-muted text-sm">Belum ada batch</p>
-                        </div>
-                        <div v-else class="overflow-x-auto">
+                        <div class="overflow-x-auto">
                             <table class="w-full text-sm">
                                 <thead>
                                     <tr class="border-b-2 border-line">
@@ -146,6 +143,9 @@ const formatCurrency = (val) => {
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <tr v-if="!product.batches || product.batches.length === 0">
+                                        <td colspan="3" class="px-4 py-10 text-center text-sm text-muted">Belum ada batch</td>
+                                    </tr>
                                     <tr v-for="batch in product.batches" :key="batch.id" class="border-b border-surface-2">
                                         <td class="py-4 px-4">{{ batch.batch_number }}</td>
                                         <td class="py-4 px-4">{{ formatDate(batch.expiry_date, '-') }}</td>

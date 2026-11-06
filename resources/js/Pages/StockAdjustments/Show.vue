@@ -98,6 +98,9 @@ const getTypeColor = (type) => {
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <tr v-if="!adjustment.items?.length">
+                                            <td colspan="2" class="px-4 py-10 text-center text-sm text-muted">Belum ada item</td>
+                                        </tr>
                                         <tr v-for="item in adjustment.items" :key="item.id" class="border-b border-line">
                                             <td class="py-3 px-4 font-semibold text-ink">{{ item.product_name }}</td>
                                             <td class="py-3 px-4 text-center">{{ formatNumber(item.quantity) }}</td>

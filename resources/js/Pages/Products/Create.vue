@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Card from '@/Components/Card.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import MoneyInput from '@/Components/MoneyInput.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 
 defineProps({
@@ -107,7 +108,7 @@ const submit = () => {
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-muted mb-2">Harga Beli (Rp)</label>
-                                <input v-model="form.purchase_price" type="number" step="0.01" class="w-full h-12 px-4 border-2 border-line text-sm focus:border-ink focus:outline-none" />
+                                <MoneyInput v-model="form.purchase_price" />
                             </div>
                         </div>
                     </Card>

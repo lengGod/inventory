@@ -155,10 +155,7 @@ const daysLabel = (batch) => {
 
                 <!-- Table -->
                 <Card>
-                    <div v-if="!batches.data || batches.data.length === 0" class="text-center py-7">
-                        <p class="text-muted text-sm">Tidak ada batch yang cocok dengan filter.</p>
-                    </div>
-                    <div v-else class="overflow-x-auto">
+                    <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b-2 border-line">
@@ -172,6 +169,9 @@ const daysLabel = (batch) => {
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr v-if="!batches.data || batches.data.length === 0">
+                                    <td colspan="7" class="px-4 py-10 text-center text-sm text-muted">Tidak ada batch yang cocok dengan filter.</td>
+                                </tr>
                                 <tr v-for="batch in batches.data" :key="batch.id" class="border-b border-surface-2 hover:bg-surface-2">
                                     <td class="py-3 px-4">
                                         <Link :href="route('products.show', batch.product_id)" class="font-semibold hover:text-violet-text hover:underline">

@@ -78,10 +78,7 @@ const post = () => {
                 <!-- Items -->
                 <Card>
                     <h2 class="text-xl font-bold text-ink font-display mb-4">Item</h2>
-                    <div v-if="!stockIn.items || stockIn.items.length === 0" class="text-center py-8">
-                        <p class="text-muted text-sm">Belum ada item</p>
-                    </div>
-                    <div v-else class="overflow-x-auto">
+                    <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b-2 border-line">
@@ -92,6 +89,9 @@ const post = () => {
                                 </tr>
                             </thead>
                             <tbody>
+                                <tr v-if="!stockIn.items || stockIn.items.length === 0">
+                                    <td colspan="4" class="px-4 py-10 text-center text-sm text-muted">Belum ada item</td>
+                                </tr>
                                 <tr v-for="item in stockIn.items" :key="item.id" class="border-b border-surface-2">
                                     <td class="py-3 px-4">{{ item.product?.name }}</td>
                                     <td class="py-3 px-4">{{ item.location?.code }}</td>
